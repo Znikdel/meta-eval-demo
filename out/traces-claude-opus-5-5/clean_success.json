@@ -1,0 +1,161 @@
+{
+  "trace": {
+    "name": "travel_agent",
+    "type": "agent",
+    "input": {
+      "user_request": "Book me a flight from JFK to LAX on January 15, 2026."
+    },
+    "output": "Booked AA123, JFK to LAX on January 15, 2026 for $250. Confirmation BL-1001.",
+    "tools_called": [
+      "name='search_flights' type=<ToolCallType.FUNCTION: 'FUNCTION'> description='Search for available flights between two airports on a date' reasoning=None output=[{'flight_id': 'AA123', 'origin': 'JFK', 'dest': 'LAX', 'date': '2026-01-15', 'price': 250}, {'flight_id': 'DL456', 'origin': 'JFK', 'dest': 'LAX', 'date': '2026-01-15', 'price': 450}] input_parameters={'origin': 'JFK', 'dest': 'LAX', 'date': '2026-01-15'}",
+      "name='book_flight' type=<ToolCallType.FUNCTION: 'FUNCTION'> description='Book a flight by its flight id' reasoning=None output={'status': 'confirmed', 'booking_ref': 'BL-1001', 'flight_id': 'AA123', 'date': '2026-01-15', 'price': 250} input_parameters={'flight_id': 'AA123'}"
+    ],
+    "available_tools": [
+      "search_flights",
+      "book_flight"
+    ],
+    "agent_handoffs": [],
+    "children": [
+      {
+        "name": "reason_and_plan",
+        "type": "llm",
+        "input": {
+          "messages": [
+            {
+              "role": "user",
+              "content": "Book me a flight from JFK to LAX on January 15, 2026."
+            }
+          ]
+        },
+        "output": "Decision: call search_flights with origin=JFK, dest=LAX, date=2026-01-15",
+        "children": []
+      },
+      {
+        "name": "search_flights",
+        "type": "tool",
+        "input": {
+          "origin": "JFK",
+          "dest": "LAX",
+          "date": "2026-01-15"
+        },
+        "output": [
+          {
+            "flight_id": "AA123",
+            "origin": "JFK",
+            "dest": "LAX",
+            "date": "2026-01-15",
+            "price": 250
+          },
+          {
+            "flight_id": "DL456",
+            "origin": "JFK",
+            "dest": "LAX",
+            "date": "2026-01-15",
+            "price": 450
+          }
+        ],
+        "description": "Search for available flights between two airports on a date",
+        "children": []
+      },
+      {
+        "name": "reason_and_plan",
+        "type": "llm",
+        "input": {
+          "messages": [
+            {
+              "role": "user",
+              "content": "Book me a flight from JFK to LAX on January 15, 2026."
+            },
+            {
+              "role": "tool",
+              "content": "[{'flight_id': 'AA123', 'origin': 'JFK', 'dest': 'LAX', 'date': '2026-01-15', 'price': 250}, {'flight_id': 'DL456', 'origin': 'JFK', 'dest': 'LAX', 'date': '2026-01-15', 'price': 450}]"
+            }
+          ]
+        },
+        "output": "Decision: call book_flight with flight_id=AA123",
+        "children": []
+      },
+      {
+        "name": "book_flight",
+        "type": "tool",
+        "input": {
+          "flight_id": "AA123"
+        },
+        "output": {
+          "status": "confirmed",
+          "booking_ref": "BL-1001",
+          "flight_id": "AA123",
+          "date": "2026-01-15",
+          "price": 250
+        },
+        "description": "Book a flight by its flight id",
+        "children": []
+      },
+      {
+        "name": "reason_and_plan",
+        "type": "llm",
+        "input": {
+          "messages": [
+            {
+              "role": "user",
+              "content": "Book me a flight from JFK to LAX on January 15, 2026."
+            },
+            {
+              "role": "tool",
+              "content": "[{'flight_id': 'AA123', 'origin': 'JFK', 'dest': 'LAX', 'date': '2026-01-15', 'price': 250}, {'flight_id': 'DL456', 'origin': 'JFK', 'dest': 'LAX', 'date': '2026-01-15', 'price': 450}]"
+            },
+            {
+              "role": "tool",
+              "content": "{'status': 'confirmed', 'booking_ref': 'BL-1001', 'flight_id': 'AA123', 'date': '2026-01-15', 'price': 250}"
+            }
+          ]
+        },
+        "output": "Task complete. Final answer: Booked AA123, JFK to LAX on January 15, 2026 for $250. Confirmation BL-1001.",
+        "children": []
+      }
+    ]
+  },
+  "scenario": "clean_success",
+  "shows": "Baseline. Verifier and judge should agree that the task was completed.",
+  "request": "Book me a flight from JFK to LAX on January 15, 2026.",
+  "final_answer": "Booked AA123, JFK to LAX on January 15, 2026 for $250. Confirmation BL-1001.",
+  "verifier": {
+    "pass": true,
+    "detail": "booking BL-1001: AA123 JFK->LAX on 2026-01-15 ($250)"
+  },
+  "judge": {
+    "majority_pass": true,
+    "passes": 3,
+    "valid_runs": 3,
+    "runs": 3,
+    "mean_score": 1.0,
+    "flips": 0
+  },
+  "verdict": "agree: completed",
+  "judge_runs": [
+    {
+      "score": 1.0,
+      "pass": true,
+      "task": "Book a flight from JFK to LAX on January 15, 2026.",
+      "outcome": "An LLM step decided to call search_flights with origin JFK, destination LAX, and date 2026-01-15. The search_flights tool returned two flights: AA123 priced at $250 and DL456 priced at $450. A second LLM step decided to call book_flight with flight_id AA123. The book_flight tool returned status 'confirmed', booking reference BL-1001, flight AA123 on 2026-01-15, at a price of $250. A third LLM step marked the task complete and produced the final answer, which the agent returned: 'Booked AA123, JFK to LAX on January 15, 2026 for $250. Confirmation BL-1001.'",
+      "reason": "The agent searched for flights from JFK to LAX on 2026-01-15 and booked AA123, which was the cheaper of the two options. The booking was confirmed with reference BL-1001. The final answer accurately reports the flight, route, date, price and confirmation, so the task was fully achieved.",
+      "seconds": 8.6
+    },
+    {
+      "score": 1.0,
+      "pass": true,
+      "task": "Book a flight from JFK to LAX on January 15, 2026.",
+      "outcome": "An LLM step (reason_and_plan) decided to call search_flights with origin JFK, destination LAX, and date 2026-01-15. The search_flights tool returned two flights: AA123 priced at $250 and DL456 priced at $450. A second LLM step decided to call book_flight with flight_id AA123. The book_flight tool returned status 'confirmed', booking reference BL-1001, flight AA123 on 2026-01-15, price $250. A third LLM step produced the final answer, and the agent output: 'Booked AA123, JFK to LAX on January 15, 2026 for $250. Confirmation BL-1001.'",
+      "reason": "The agent searched for flights on the correct route (JFK to LAX) and date (2026-01-15), then booked an available flight (AA123, the cheaper option). The booking came back confirmed with reference BL-1001, and the agent reported the flight, date, price and confirmation details to the user. This fully achieves the task.",
+      "seconds": 6.3
+    },
+    {
+      "score": 1.0,
+      "pass": true,
+      "task": "Book a flight from JFK to LAX on January 15, 2026.",
+      "outcome": "An LLM step ('reason_and_plan') decided to call search_flights with origin=JFK, dest=LAX, date=2026-01-15. The search_flights tool returned two flights: AA123 for $250 and DL456 for $450. A second LLM step decided to call book_flight with flight_id=AA123. The book_flight tool returned status 'confirmed', booking reference BL-1001, flight AA123 on 2026-01-15, price $250. A third LLM step produced the final answer, and the agent output: 'Booked AA123, JFK to LAX on January 15, 2026 for $250. Confirmation BL-1001.'",
+      "reason": "The agent searched for flights from JFK to LAX on the correct date (2026-01-15) and booked flight AA123, the cheaper option. It received a confirmed booking (reference BL-1001) and clearly reported the result to the user. Every part of the task was completed correctly.",
+      "seconds": 6.3
+    }
+  ]
+}
