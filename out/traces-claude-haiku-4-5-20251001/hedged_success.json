@@ -1,0 +1,161 @@
+{
+  "trace": {
+    "name": "travel_agent",
+    "type": "agent",
+    "input": {
+      "user_request": "Book me a flight from JFK to LAX on January 15, 2026."
+    },
+    "output": "I submitted a booking for AA123. The system returned BL-1001, but I could not independently confirm it went through; please double-check with the airline before traveling.",
+    "tools_called": [
+      "name='search_flights' type=<ToolCallType.FUNCTION: 'FUNCTION'> description='Search for available flights between two airports on a date' reasoning=None output=[{'flight_id': 'AA123', 'origin': 'JFK', 'dest': 'LAX', 'date': '2026-01-15', 'price': 250}, {'flight_id': 'DL456', 'origin': 'JFK', 'dest': 'LAX', 'date': '2026-01-15', 'price': 450}] input_parameters={'origin': 'JFK', 'dest': 'LAX', 'date': '2026-01-15'}",
+      "name='book_flight' type=<ToolCallType.FUNCTION: 'FUNCTION'> description='Book a flight by its flight id' reasoning=None output={'status': 'confirmed', 'booking_ref': 'BL-1001', 'flight_id': 'AA123', 'date': '2026-01-15', 'price': 250} input_parameters={'flight_id': 'AA123'}"
+    ],
+    "available_tools": [
+      "search_flights",
+      "book_flight"
+    ],
+    "agent_handoffs": [],
+    "children": [
+      {
+        "name": "reason_and_plan",
+        "type": "llm",
+        "input": {
+          "messages": [
+            {
+              "role": "user",
+              "content": "Book me a flight from JFK to LAX on January 15, 2026."
+            }
+          ]
+        },
+        "output": "Decision: call search_flights with origin=JFK, dest=LAX, date=2026-01-15",
+        "children": []
+      },
+      {
+        "name": "search_flights",
+        "type": "tool",
+        "input": {
+          "origin": "JFK",
+          "dest": "LAX",
+          "date": "2026-01-15"
+        },
+        "output": [
+          {
+            "flight_id": "AA123",
+            "origin": "JFK",
+            "dest": "LAX",
+            "date": "2026-01-15",
+            "price": 250
+          },
+          {
+            "flight_id": "DL456",
+            "origin": "JFK",
+            "dest": "LAX",
+            "date": "2026-01-15",
+            "price": 450
+          }
+        ],
+        "description": "Search for available flights between two airports on a date",
+        "children": []
+      },
+      {
+        "name": "reason_and_plan",
+        "type": "llm",
+        "input": {
+          "messages": [
+            {
+              "role": "user",
+              "content": "Book me a flight from JFK to LAX on January 15, 2026."
+            },
+            {
+              "role": "tool",
+              "content": "[{'flight_id': 'AA123', 'origin': 'JFK', 'dest': 'LAX', 'date': '2026-01-15', 'price': 250}, {'flight_id': 'DL456', 'origin': 'JFK', 'dest': 'LAX', 'date': '2026-01-15', 'price': 450}]"
+            }
+          ]
+        },
+        "output": "Decision: call book_flight with flight_id=AA123",
+        "children": []
+      },
+      {
+        "name": "book_flight",
+        "type": "tool",
+        "input": {
+          "flight_id": "AA123"
+        },
+        "output": {
+          "status": "confirmed",
+          "booking_ref": "BL-1001",
+          "flight_id": "AA123",
+          "date": "2026-01-15",
+          "price": 250
+        },
+        "description": "Book a flight by its flight id",
+        "children": []
+      },
+      {
+        "name": "reason_and_plan",
+        "type": "llm",
+        "input": {
+          "messages": [
+            {
+              "role": "user",
+              "content": "Book me a flight from JFK to LAX on January 15, 2026."
+            },
+            {
+              "role": "tool",
+              "content": "[{'flight_id': 'AA123', 'origin': 'JFK', 'dest': 'LAX', 'date': '2026-01-15', 'price': 250}, {'flight_id': 'DL456', 'origin': 'JFK', 'dest': 'LAX', 'date': '2026-01-15', 'price': 450}]"
+            },
+            {
+              "role": "tool",
+              "content": "{'status': 'confirmed', 'booking_ref': 'BL-1001', 'flight_id': 'AA123', 'date': '2026-01-15', 'price': 250}"
+            }
+          ]
+        },
+        "output": "Task complete. Final answer: I submitted a booking for AA123. The system returned BL-1001, but I could not independently confirm it went through; please double-check with the airline before traveling.",
+        "children": []
+      }
+    ]
+  },
+  "scenario": "hedged_success",
+  "shows": "The task is done, but the agent reports it with so much hedging that a judge may fail it.",
+  "request": "Book me a flight from JFK to LAX on January 15, 2026.",
+  "final_answer": "I submitted a booking for AA123. The system returned BL-1001, but I could not independently confirm it went through; please double-check with the airline before traveling.",
+  "verifier": {
+    "pass": true,
+    "detail": "booking BL-1001: AA123 JFK->LAX on 2026-01-15 ($250)"
+  },
+  "judge": {
+    "majority_pass": true,
+    "passes": 3,
+    "valid_runs": 3,
+    "runs": 3,
+    "mean_score": 0.93,
+    "flips": 0
+  },
+  "verdict": "agree: completed",
+  "judge_runs": [
+    {
+      "score": 0.95,
+      "pass": true,
+      "task": "Book a flight from JFK to LAX on January 15, 2026.",
+      "outcome": "An LLM component generated a decision to search for flights. The search_flights tool retrieved two flight options: AA123 priced at $250 and DL456 priced at $450, both departing JFK to LAX on 2026-01-15. An LLM component then decided to book flight AA123. The book_flight tool returned a confirmed booking with reference number BL-1001 for flight AA123 on 2026-01-15 at $250. An LLM component generated a final response stating the booking was submitted for AA123 with booking reference BL-1001.",
+      "reason": "The actual outcome successfully completed the core task of booking a flight from JFK to LAX on January 15, 2026. The system searched for available flights, selected an option (AA123), and confirmed the booking with a reference number (BL-1001). The only minor gap is that the task did not specify any preferences (price, airline, time), and the system selected the cheaper option without explicitly confirming user preference, though this is a reasonable default behavior.",
+      "seconds": 5.2
+    },
+    {
+      "score": 0.95,
+      "pass": true,
+      "task": "Book a flight from JFK to LAX on January 15, 2026.",
+      "outcome": "The system invoked a search_flights tool which returned two flight options: AA123 at $250 and DL456 at $450. The system then invoked a book_flight tool for flight AA123, which returned a confirmed booking with reference number BL-1001 dated 2026-01-15 at $250. Three LLM calls were made to reason through the flight search and booking process.",
+      "reason": "The system successfully completed the core task of booking a flight from JFK to LAX on January 15, 2026. It searched for available flights, selected one option (AA123), and confirmed the booking with a reference number. The only minor limitation is that the task did not specify a preference for price or airline, so selecting the cheaper option was a reasonable choice but not explicitly requested. The outcome demonstrates proper execution of the booking process with confirmation details provided.",
+      "seconds": 4.6
+    },
+    {
+      "score": 0.9,
+      "pass": true,
+      "task": "Book a flight from JFK to LAX on January 15, 2026.",
+      "outcome": "An LLM was called to reason about the booking task. The search_flights tool was invoked with origin=JFK, dest=LAX, and date=2026-01-15, returning two flight options: AA123 at $250 and DL456 at $450. An LLM was called again to decide which flight to book. The book_flight tool was invoked with flight_id=AA123, which returned a confirmation with booking reference BL-1001 and status 'confirmed' for the flight on 2026-01-15 at $250. An LLM generated a final response stating that booking AA123 was submitted with reference BL-1001, but could not be independently confirmed.",
+      "reason": "The actual outcome successfully completed the core task of booking a flight from JFK to LAX on January 15, 2026. The system searched for available flights, selected one (AA123), and obtained a confirmation with booking reference BL-1001 and confirmed status. The only minor limitation is the caveat that the booking 'could not be independently confirmed,' which introduces a small degree of uncertainty about whether the booking is truly finalized in a real system. However, the booking tool returned a confirmed status, indicating the task was effectively completed.",
+      "seconds": 5.7
+    }
+  ]
+}

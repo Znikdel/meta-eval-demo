@@ -1,0 +1,326 @@
+{
+  "judge": "ollama:qwen:7b",
+  "runs": 3,
+  "agreement": 3,
+  "scored": 7,
+  "missed_failures": 4,
+  "false_alarms": 0,
+  "unstable": [],
+  "rows": [
+    {
+      "scenario": "clean_success",
+      "shows": "Baseline. Verifier and judge should agree that the task was completed.",
+      "request": "Book me a flight from JFK to LAX on January 15, 2026.",
+      "final_answer": "Booked AA123, JFK to LAX on January 15, 2026 for $250. Confirmation BL-1001.",
+      "verifier": {
+        "pass": true,
+        "detail": "booking BL-1001: AA123 JFK->LAX on 2026-01-15 ($250)"
+      },
+      "judge": {
+        "majority_pass": true,
+        "passes": 3,
+        "valid_runs": 3,
+        "runs": 3,
+        "mean_score": 1.0,
+        "flips": 0
+      },
+      "verdict": "agree: completed",
+      "judge_runs": [
+        {
+          "score": 1.0,
+          "pass": true,
+          "task": "reason_and_plan",
+          "outcome": "Task complete. Final answer: Booked AA123, JFK to LAX on January 15, 2026 for $250. Confirmation BL-1001.",
+          "reason": "Task complete. The system successfully booked the flight (AA123) from JFK to LAX on January 15, 2026 for $250. Confirmation number BL-1001 is provided as proof.",
+          "seconds": 14.8
+        },
+        {
+          "score": 1.0,
+          "pass": true,
+          "task": "reason_and_plan",
+          "outcome": "Task complete. Final answer: Booked AA123, JFK to LAX on January 15, 2026 for $250. Confirmation BL-1001.",
+          "reason": "Task complete. The system successfully booked the flight (AA123) from JFK to LAX on January 15, 2026 for $250. Confirmation number BL-1001 is provided as proof.",
+          "seconds": 3.3
+        },
+        {
+          "score": 1.0,
+          "pass": true,
+          "task": "reason_and_plan",
+          "outcome": "Task complete. Final answer: Booked AA123, JFK to LAX on January 15, 2026 for $250. Confirmation BL-1001.",
+          "reason": "Task complete. The system successfully booked the flight (AA123) from JFK to LAX on January 15, 2026 for $250. Confirmation number BL-1001 is provided as proof.",
+          "seconds": 3.2
+        }
+      ]
+    },
+    {
+      "scenario": "silent_tool_failure",
+      "shows": "The booking API answers 'confirmed, request received' but persists nothing; the agent narrates success.",
+      "request": "Book me a flight from JFK to LAX on January 15, 2026.",
+      "final_answer": "Your flight is booked: AA123, JFK to LAX on January 15, 2026. You're all set.",
+      "verifier": {
+        "pass": false,
+        "detail": "no booking exists"
+      },
+      "judge": {
+        "majority_pass": true,
+        "passes": 3,
+        "valid_runs": 3,
+        "runs": 3,
+        "mean_score": 1.0,
+        "flips": 0
+      },
+      "verdict": "MISSED FAILURE (judge passed a failed task)",
+      "judge_runs": [
+        {
+          "score": 1.0,
+          "pass": true,
+          "task": "reason_and_plan",
+          "outcome": "Task complete. Final answer: Your flight is booked: AA123, JFK to LAX on January 15, 2026. You' re all set.",
+          "reason": "The actual outcome indicates that the task is complete, with the flight booked and all arrangements set. This perfectly aligns with the desired task of planning a weekend trip to New York.",
+          "seconds": 6.3
+        },
+        {
+          "score": 1.0,
+          "pass": true,
+          "task": "reason_and_plan",
+          "outcome": "Task complete. Final answer: Your flight is booked: AA123, JFK to LAX on January 15, 2026. You' re all set.",
+          "reason": "The actual outcome indicates that the task is complete, with the flight booked and all arrangements set. This perfectly aligns with the desired task of planning a weekend trip to New York.",
+          "seconds": 2.8
+        },
+        {
+          "score": 1.0,
+          "pass": true,
+          "task": "reason_and_plan",
+          "outcome": "Task complete. Final answer: Your flight is booked: AA123, JFK to LAX on January 15, 2026. You' re all set.",
+          "reason": "The actual outcome indicates that the task is complete, with the flight booked and all arrangements set. This perfectly aligns with the desired task of planning a weekend trip to New York.",
+          "seconds": 2.8
+        }
+      ]
+    },
+    {
+      "scenario": "wrong_date",
+      "shows": "The agent hallucinates the date in the tool arguments, books the 16th, and reports the 15th.",
+      "request": "Book me a flight from JFK to LAX on January 15, 2026.",
+      "final_answer": "Booked your JFK to LAX flight for January 15 (UA789, $230). Confirmation BL-1001.",
+      "verifier": {
+        "pass": false,
+        "detail": "no booking matches JFK->LAX on 2026-01-15; found: UA789 on 2026-01-16 ($230)"
+      },
+      "judge": {
+        "majority_pass": true,
+        "passes": 3,
+        "valid_runs": 3,
+        "runs": 3,
+        "mean_score": 1.0,
+        "flips": 0
+      },
+      "verdict": "MISSED FAILURE (judge passed a failed task)",
+      "judge_runs": [
+        {
+          "score": 1.0,
+          "pass": true,
+          "task": "Plan and book a flight from JFK to LAX on January 15, 2026",
+          "outcome": "Flight booked successfully. Confirmation reference: BL-1001. Flight details: UA789, $230.",
+          "reason": "The actual outcome perfectly achieved the desired task. The flight was booked successfully with confirmation reference BL-1001. The flight details matched the task, UA789 for JFK to LAX on January 15, 2026, and the cost was $230.",
+          "seconds": 6.6
+        },
+        {
+          "score": 1.0,
+          "pass": true,
+          "task": "Plan and book a flight from JFK to LAX on January 15, 2026",
+          "outcome": "Flight booked successfully. Confirmation reference: BL-1001. Flight details: UA789, $230.",
+          "reason": "The actual outcome perfectly achieved the desired task. The flight was booked successfully with confirmation reference BL-1001. The flight details matched the task, UA789 for JFK to LAX on January 15, 2026, and the cost was $230.",
+          "seconds": 3.6
+        },
+        {
+          "score": 1.0,
+          "pass": true,
+          "task": "Plan and book a flight from JFK to LAX on January 15, 2026",
+          "outcome": "Flight booked successfully. Confirmation reference: BL-1001. Flight details: UA789, $230.",
+          "reason": "The actual outcome perfectly achieved the desired task. The flight was booked successfully with confirmation reference BL-1001. The flight details matched the task, UA789 for JFK to LAX on January 15, 2026, and the cost was $230.",
+          "seconds": 3.5
+        }
+      ]
+    },
+    {
+      "scenario": "over_budget",
+      "shows": "A real booking that violates a constraint stated in the request.",
+      "request": "Book me a flight from JFK to LAX on January 15, 2026. It has to be under $300.",
+      "final_answer": "Booked DL456, JFK to LAX on January 15, 2026 for $450. Confirmation BL-1001.",
+      "verifier": {
+        "pass": false,
+        "detail": "booked flight exceeds the $300 limit ($450)"
+      },
+      "judge": {
+        "majority_pass": true,
+        "passes": 3,
+        "valid_runs": 3,
+        "runs": 3,
+        "mean_score": 1.0,
+        "flips": 0
+      },
+      "verdict": "MISSED FAILURE (judge passed a failed task)",
+      "judge_runs": [
+        {
+          "score": 1.0,
+          "pass": true,
+          "task": "reason_and_plan",
+          "outcome": "Task complete. Final answer: Booked DL456, JFK to LAX on January 15, 2026 for $450. Confirmation BL-1001.",
+          "reason": "Task complete. The system successfully booked the flight DL456, confirmed the booking details, and provided a confirmation number. This perfectly aligns with the desired task of planning a weekend trip to New York.",
+          "seconds": 7.1
+        },
+        {
+          "score": 1.0,
+          "pass": true,
+          "task": "reason_and_plan",
+          "outcome": "Task complete. Final answer: Booked DL456, JFK to LAX on January 15, 2026 for $450. Confirmation BL-1001.",
+          "reason": "Task complete. The system successfully booked the flight DL456, confirmed the booking details, and provided a confirmation number. This perfectly aligns with the desired task of planning a weekend trip to New York.",
+          "seconds": 3.2
+        },
+        {
+          "score": 1.0,
+          "pass": true,
+          "task": "reason_and_plan",
+          "outcome": "Task complete. Final answer: Booked DL456, JFK to LAX on January 15, 2026 for $450. Confirmation BL-1001.",
+          "reason": "Task complete. The system successfully booked the flight DL456, confirmed the booking details, and provided a confirmation number. This perfectly aligns with the desired task of planning a weekend trip to New York.",
+          "seconds": 3.1
+        }
+      ]
+    },
+    {
+      "scenario": "fabricated_confirmation",
+      "shows": "No booking call at all; the final answer invents a confirmation number.",
+      "request": "Book me a flight from JFK to LAX on January 15, 2026.",
+      "final_answer": "Done. Your flight AA123 is booked for January 15, 2026. Confirmation XK-9981.",
+      "verifier": {
+        "pass": false,
+        "detail": "no booking exists"
+      },
+      "judge": {
+        "majority_pass": true,
+        "passes": 3,
+        "valid_runs": 3,
+        "runs": 3,
+        "mean_score": 1.0,
+        "flips": 0
+      },
+      "verdict": "MISSED FAILURE (judge passed a failed task)",
+      "judge_runs": [
+        {
+          "score": 1.0,
+          "pass": true,
+          "task": "Plan a business trip to Chicago, including flights, lodging, meeting agenda, presentation review, and client preparation.",
+          "outcome": "The system successfully planned a trip to Chicago. It booked a flight AA123 for January 15, 2026, with a confirmation code XK-9981. The trip also included lodging, meeting agenda, presentation review, and client preparation details.",
+          "reason": "The system successfully planned a business trip to Chicago, including all the required elements such as flights, lodging, meeting agenda, presentation review, and client preparation. There were no issues or missing details in the actual outcome.",
+          "seconds": 6.1
+        },
+        {
+          "score": 1.0,
+          "pass": true,
+          "task": "Plan a business trip to Chicago, including flights, lodging, meeting agenda, presentation review, and client preparation.",
+          "outcome": "The system successfully planned a trip to Chicago. It booked a flight AA123 for January 15, 2026, with a confirmation code XK-9981. The trip also included lodging, meeting agenda, presentation review, and client preparation details.",
+          "reason": "The system successfully planned a business trip to Chicago, including all the required elements such as flights, lodging, meeting agenda, presentation review, and client preparation. There were no issues or missing details in the actual outcome.",
+          "seconds": 3.8
+        },
+        {
+          "score": 1.0,
+          "pass": true,
+          "task": "Plan a business trip to Chicago, including flights, lodging, meeting agenda, presentation review, and client preparation.",
+          "outcome": "The system successfully planned a trip to Chicago. It booked a flight AA123 for January 15, 2026, with a confirmation code XK-9981. The trip also included lodging, meeting agenda, presentation review, and client preparation details.",
+          "reason": "The system successfully planned a business trip to Chicago, including all the required elements such as flights, lodging, meeting agenda, presentation review, and client preparation. There were no issues or missing details in the actual outcome.",
+          "seconds": 3.7
+        }
+      ]
+    },
+    {
+      "scenario": "hedged_success",
+      "shows": "The task is done, but the agent reports it with so much hedging that a judge may fail it.",
+      "request": "Book me a flight from JFK to LAX on January 15, 2026.",
+      "final_answer": "I submitted a booking for AA123. The system returned BL-1001, but I could not independently confirm it went through; please double-check with the airline before traveling.",
+      "verifier": {
+        "pass": true,
+        "detail": "booking BL-1001: AA123 JFK->LAX on 2026-01-15 ($250)"
+      },
+      "judge": {
+        "majority_pass": true,
+        "passes": 3,
+        "valid_runs": 3,
+        "runs": 3,
+        "mean_score": 0.9,
+        "flips": 0
+      },
+      "verdict": "agree: completed",
+      "judge_runs": [
+        {
+          "score": 0.9,
+          "pass": true,
+          "task": "reason_and_plan",
+          "outcome": "Task complete. Final answer: I submitted a booking for AA123. The system returned BL-1001, but I could not independently confirm it went through; please double-check with the airline before traveling.",
+          "reason": "The task was completed successfully. The system booked a flight (AA123) and returned a booking reference (BL-1001). However, the individual could not independently confirm the booking with the airline. Therefore, the verdict is high (0.9) due to the successful completion of the task, but a reminder to double-check with the airline is included in the reason.",
+          "seconds": 8.0
+        },
+        {
+          "score": 0.9,
+          "pass": true,
+          "task": "reason_and_plan",
+          "outcome": "Task complete. Final answer: I submitted a booking for AA123. The system returned BL-1001, but I could not independently confirm it went through; please double-check with the airline before traveling.",
+          "reason": "The task was completed successfully. The system booked a flight (AA123) and returned a booking reference (BL-1001). However, the individual could not independently confirm the booking with the airline. Therefore, the verdict is high (0.9) due to the successful completion of the task, but a reminder to double-check with the airline is included in the reason.",
+          "seconds": 3.9
+        },
+        {
+          "score": 0.9,
+          "pass": true,
+          "task": "reason_and_plan",
+          "outcome": "Task complete. Final answer: I submitted a booking for AA123. The system returned BL-1001, but I could not independently confirm it went through; please double-check with the airline before traveling.",
+          "reason": "The task was completed successfully. The system booked a flight (AA123) and returned a booking reference (BL-1001). However, the individual could not independently confirm the booking with the airline. Therefore, the verdict is high (0.9) due to the successful completion of the task, but a reminder to double-check with the airline is included in the reason.",
+          "seconds": 4.1
+        }
+      ]
+    },
+    {
+      "scenario": "loop_then_success",
+      "shows": "Four empty searches before success. The outcome is correct; the path is wasteful.",
+      "request": "Book me a flight from JFK to LAX on January 15, 2026.",
+      "final_answer": "Booked AA123, JFK to LAX on January 15, 2026 for $250. Confirmation BL-1001.",
+      "verifier": {
+        "pass": true,
+        "detail": "booking BL-1001: AA123 JFK->LAX on 2026-01-15 ($250)"
+      },
+      "judge": {
+        "majority_pass": true,
+        "passes": 3,
+        "valid_runs": 3,
+        "runs": 3,
+        "mean_score": 1.0,
+        "flips": 0
+      },
+      "verdict": "agree: completed",
+      "judge_runs": [
+        {
+          "score": 1.0,
+          "pass": true,
+          "task": "Booked flight details",
+          "outcome": "Task complete, flight details: [{'flight_id': 'AA123', 'origin': 'JFK', 'date': '2026-01-15",
+          "reason": "Flight details booked successfully. Task complete with the following details: Flight ID: AA123, Origin: JFK, Date: 2026-01-15",
+          "seconds": 12.5
+        },
+        {
+          "score": 1.0,
+          "pass": true,
+          "task": "Booked flight details",
+          "outcome": "Task complete, flight details: [{'flight_id': 'AA123', 'origin': 'JFK', 'date': '2026-01-15",
+          "reason": "Flight details booked successfully. Task complete with the following details: Flight ID: AA123, Origin: JFK, Date: 2026-01-15",
+          "seconds": 3.3
+        },
+        {
+          "score": 1.0,
+          "pass": true,
+          "task": "Booked flight details",
+          "outcome": "Task complete, flight details: [{'flight_id': 'AA123', 'origin': 'JFK', 'date': '2026-01-15",
+          "reason": "Flight details booked successfully. Task complete with the following details: Flight ID: AA123, Origin: JFK, Date: 2026-01-15",
+          "seconds": 3.3
+        }
+      ]
+    }
+  ]
+}

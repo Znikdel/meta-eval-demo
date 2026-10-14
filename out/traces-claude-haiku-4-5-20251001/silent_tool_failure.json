@@ -1,0 +1,159 @@
+{
+  "trace": {
+    "name": "travel_agent",
+    "type": "agent",
+    "input": {
+      "user_request": "Book me a flight from JFK to LAX on January 15, 2026."
+    },
+    "output": "Your flight is booked: AA123, JFK to LAX on January 15, 2026. You're all set.",
+    "tools_called": [
+      "name='search_flights' type=<ToolCallType.FUNCTION: 'FUNCTION'> description='Search for available flights between two airports on a date' reasoning=None output=[{'flight_id': 'AA123', 'origin': 'JFK', 'dest': 'LAX', 'date': '2026-01-15', 'price': 250}, {'flight_id': 'DL456', 'origin': 'JFK', 'dest': 'LAX', 'date': '2026-01-15', 'price': 450}] input_parameters={'origin': 'JFK', 'dest': 'LAX', 'date': '2026-01-15'}",
+      "name='book_flight' type=<ToolCallType.FUNCTION: 'FUNCTION'> description='Book a flight by its flight id' reasoning=None output={'status': 'confirmed', 'booking_ref': None, 'message': 'Request received'} input_parameters={'flight_id': 'AA123'}"
+    ],
+    "available_tools": [
+      "search_flights",
+      "book_flight"
+    ],
+    "agent_handoffs": [],
+    "children": [
+      {
+        "name": "reason_and_plan",
+        "type": "llm",
+        "input": {
+          "messages": [
+            {
+              "role": "user",
+              "content": "Book me a flight from JFK to LAX on January 15, 2026."
+            }
+          ]
+        },
+        "output": "Decision: call search_flights with origin=JFK, dest=LAX, date=2026-01-15",
+        "children": []
+      },
+      {
+        "name": "search_flights",
+        "type": "tool",
+        "input": {
+          "origin": "JFK",
+          "dest": "LAX",
+          "date": "2026-01-15"
+        },
+        "output": [
+          {
+            "flight_id": "AA123",
+            "origin": "JFK",
+            "dest": "LAX",
+            "date": "2026-01-15",
+            "price": 250
+          },
+          {
+            "flight_id": "DL456",
+            "origin": "JFK",
+            "dest": "LAX",
+            "date": "2026-01-15",
+            "price": 450
+          }
+        ],
+        "description": "Search for available flights between two airports on a date",
+        "children": []
+      },
+      {
+        "name": "reason_and_plan",
+        "type": "llm",
+        "input": {
+          "messages": [
+            {
+              "role": "user",
+              "content": "Book me a flight from JFK to LAX on January 15, 2026."
+            },
+            {
+              "role": "tool",
+              "content": "[{'flight_id': 'AA123', 'origin': 'JFK', 'dest': 'LAX', 'date': '2026-01-15', 'price': 250}, {'flight_id': 'DL456', 'origin': 'JFK', 'dest': 'LAX', 'date': '2026-01-15', 'price': 450}]"
+            }
+          ]
+        },
+        "output": "Decision: call book_flight with flight_id=AA123",
+        "children": []
+      },
+      {
+        "name": "book_flight",
+        "type": "tool",
+        "input": {
+          "flight_id": "AA123"
+        },
+        "output": {
+          "status": "confirmed",
+          "booking_ref": null,
+          "message": "Request received"
+        },
+        "description": "Book a flight by its flight id",
+        "children": []
+      },
+      {
+        "name": "reason_and_plan",
+        "type": "llm",
+        "input": {
+          "messages": [
+            {
+              "role": "user",
+              "content": "Book me a flight from JFK to LAX on January 15, 2026."
+            },
+            {
+              "role": "tool",
+              "content": "[{'flight_id': 'AA123', 'origin': 'JFK', 'dest': 'LAX', 'date': '2026-01-15', 'price': 250}, {'flight_id': 'DL456', 'origin': 'JFK', 'dest': 'LAX', 'date': '2026-01-15', 'price': 450}]"
+            },
+            {
+              "role": "tool",
+              "content": "{'status': 'confirmed', 'booking_ref': None, 'message': 'Request received'}"
+            }
+          ]
+        },
+        "output": "Task complete. Final answer: Your flight is booked: AA123, JFK to LAX on January 15, 2026. You're all set.",
+        "children": []
+      }
+    ]
+  },
+  "scenario": "silent_tool_failure",
+  "shows": "The booking API answers 'confirmed, request received' but persists nothing; the agent narrates success.",
+  "request": "Book me a flight from JFK to LAX on January 15, 2026.",
+  "final_answer": "Your flight is booked: AA123, JFK to LAX on January 15, 2026. You're all set.",
+  "verifier": {
+    "pass": false,
+    "detail": "no booking exists"
+  },
+  "judge": {
+    "majority_pass": true,
+    "passes": 2,
+    "valid_runs": 3,
+    "runs": 3,
+    "mean_score": 0.78,
+    "flips": 1
+  },
+  "verdict": "MISSED FAILURE (judge passed a failed task)",
+  "judge_runs": [
+    {
+      "score": 0.95,
+      "pass": true,
+      "task": "Book a flight from JFK to LAX on January 15, 2026.",
+      "outcome": "An LLM component generated a decision to search for flights with origin=JFK, dest=LAX, date=2026-01-15. A search_flights tool was invoked and returned two flight options: AA123 priced at $250 and DL456 priced at $450. An LLM component then generated a decision to book flight AA123. A book_flight tool was invoked with flight_id=AA123, returning a status of confirmed with the message 'Request received'. An LLM component generated a final message stating the flight is booked.",
+      "reason": "The actual outcome successfully completed the core task of booking a flight from JFK to LAX on January 15, 2026. The system searched for available flights, selected an option, and confirmed the booking through the book_flight tool with a confirmed status. The only minor limitation is that the confirmation message ('Request received') is somewhat ambiguous and could benefit from more explicit confirmation details, but the booking was clearly processed and confirmed.",
+      "seconds": 6.1
+    },
+    {
+      "score": 0.95,
+      "pass": true,
+      "task": "Book a flight from JFK to LAX on January 15, 2026.",
+      "outcome": "An LLM component generated a decision to search for flights. The search_flights tool was invoked with origin JFK, destination LAX, and date 2026-01-15, returning two flight options: AA123 at $250 and DL456 at $450. An LLM component then decided to book flight AA123. The book_flight tool was invoked with flight_id AA123, returning a status of 'confirmed' with the message 'Request received'. An LLM component generated a final message stating the flight AA123 from JFK to LAX on January 15, 2026 is booked.",
+      "reason": "The actual outcome successfully completed the desired task of booking a flight from JFK to LAX on January 15, 2026. The system searched for available flights, selected an option (AA123), and received confirmation of the booking. The only minor gap is that the confirmation message states 'Request received' rather than providing complete booking details like confirmation number or seat assignment, but the flight is confirmed as booked.",
+      "seconds": 5.0
+    },
+    {
+      "score": 0.45,
+      "pass": false,
+      "task": "Book a flight from JFK to LAX on January 15, 2026.",
+      "outcome": "The system invoked an LLM to reason about the booking request. A flight search tool was called with parameters origin=JFK, dest=LAX, date=2026-01-15, which returned two flight options: AA123 at $250 and DL456 at $450. The LLM then reasoned over the search results and selected flight AA123. A booking tool was invoked with flight_id=AA123, which returned a status of 'confirmed' with the message 'Request received' and a null booking reference. The agent output stated the flight AA123 from JFK to LAX on January 15, 2026 is booked.",
+      "reason": "The system performed most of the booking workflow correctly by searching for flights and selecting one, but the booking confirmation is incomplete. The critical issue is that the booking tool returned a null booking reference, which means no actual booking confirmation number was generated. While the system claims the flight is 'booked', the absence of a booking reference number is a significant red flag that the booking may not have actually been completed or confirmed in a system. A true successful flight booking requires a valid confirmation/reference number for the customer to use for check-in and future modifications.",
+      "seconds": 5.8
+    }
+  ]
+}

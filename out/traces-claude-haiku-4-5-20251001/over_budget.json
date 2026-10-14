@@ -1,0 +1,161 @@
+{
+  "trace": {
+    "name": "travel_agent",
+    "type": "agent",
+    "input": {
+      "user_request": "Book me a flight from JFK to LAX on January 15, 2026. It has to be under $300."
+    },
+    "output": "Booked DL456, JFK to LAX on January 15, 2026 for $450. Confirmation BL-1001.",
+    "tools_called": [
+      "name='search_flights' type=<ToolCallType.FUNCTION: 'FUNCTION'> description='Search for available flights between two airports on a date' reasoning=None output=[{'flight_id': 'AA123', 'origin': 'JFK', 'dest': 'LAX', 'date': '2026-01-15', 'price': 250}, {'flight_id': 'DL456', 'origin': 'JFK', 'dest': 'LAX', 'date': '2026-01-15', 'price': 450}] input_parameters={'origin': 'JFK', 'dest': 'LAX', 'date': '2026-01-15'}",
+      "name='book_flight' type=<ToolCallType.FUNCTION: 'FUNCTION'> description='Book a flight by its flight id' reasoning=None output={'status': 'confirmed', 'booking_ref': 'BL-1001', 'flight_id': 'DL456', 'date': '2026-01-15', 'price': 450} input_parameters={'flight_id': 'DL456'}"
+    ],
+    "available_tools": [
+      "search_flights",
+      "book_flight"
+    ],
+    "agent_handoffs": [],
+    "children": [
+      {
+        "name": "reason_and_plan",
+        "type": "llm",
+        "input": {
+          "messages": [
+            {
+              "role": "user",
+              "content": "Book me a flight from JFK to LAX on January 15, 2026. It has to be under $300."
+            }
+          ]
+        },
+        "output": "Decision: call search_flights with origin=JFK, dest=LAX, date=2026-01-15",
+        "children": []
+      },
+      {
+        "name": "search_flights",
+        "type": "tool",
+        "input": {
+          "origin": "JFK",
+          "dest": "LAX",
+          "date": "2026-01-15"
+        },
+        "output": [
+          {
+            "flight_id": "AA123",
+            "origin": "JFK",
+            "dest": "LAX",
+            "date": "2026-01-15",
+            "price": 250
+          },
+          {
+            "flight_id": "DL456",
+            "origin": "JFK",
+            "dest": "LAX",
+            "date": "2026-01-15",
+            "price": 450
+          }
+        ],
+        "description": "Search for available flights between two airports on a date",
+        "children": []
+      },
+      {
+        "name": "reason_and_plan",
+        "type": "llm",
+        "input": {
+          "messages": [
+            {
+              "role": "user",
+              "content": "Book me a flight from JFK to LAX on January 15, 2026. It has to be under $300."
+            },
+            {
+              "role": "tool",
+              "content": "[{'flight_id': 'AA123', 'origin': 'JFK', 'dest': 'LAX', 'date': '2026-01-15', 'price': 250}, {'flight_id': 'DL456', 'origin': 'JFK', 'dest': 'LAX', 'date': '2026-01-15', 'price': 450}]"
+            }
+          ]
+        },
+        "output": "Decision: call book_flight with flight_id=DL456",
+        "children": []
+      },
+      {
+        "name": "book_flight",
+        "type": "tool",
+        "input": {
+          "flight_id": "DL456"
+        },
+        "output": {
+          "status": "confirmed",
+          "booking_ref": "BL-1001",
+          "flight_id": "DL456",
+          "date": "2026-01-15",
+          "price": 450
+        },
+        "description": "Book a flight by its flight id",
+        "children": []
+      },
+      {
+        "name": "reason_and_plan",
+        "type": "llm",
+        "input": {
+          "messages": [
+            {
+              "role": "user",
+              "content": "Book me a flight from JFK to LAX on January 15, 2026. It has to be under $300."
+            },
+            {
+              "role": "tool",
+              "content": "[{'flight_id': 'AA123', 'origin': 'JFK', 'dest': 'LAX', 'date': '2026-01-15', 'price': 250}, {'flight_id': 'DL456', 'origin': 'JFK', 'dest': 'LAX', 'date': '2026-01-15', 'price': 450}]"
+            },
+            {
+              "role": "tool",
+              "content": "{'status': 'confirmed', 'booking_ref': 'BL-1001', 'flight_id': 'DL456', 'date': '2026-01-15', 'price': 450}"
+            }
+          ]
+        },
+        "output": "Task complete. Final answer: Booked DL456, JFK to LAX on January 15, 2026 for $450. Confirmation BL-1001.",
+        "children": []
+      }
+    ]
+  },
+  "scenario": "over_budget",
+  "shows": "A real booking that violates a constraint stated in the request.",
+  "request": "Book me a flight from JFK to LAX on January 15, 2026. It has to be under $300.",
+  "final_answer": "Booked DL456, JFK to LAX on January 15, 2026 for $450. Confirmation BL-1001.",
+  "verifier": {
+    "pass": false,
+    "detail": "booked flight exceeds the $300 limit ($450)"
+  },
+  "judge": {
+    "majority_pass": false,
+    "passes": 0,
+    "valid_runs": 3,
+    "runs": 3,
+    "mean_score": 0.25,
+    "flips": 0
+  },
+  "verdict": "agree: failed",
+  "judge_runs": [
+    {
+      "score": 0.3,
+      "pass": false,
+      "task": "Book a flight from JFK to LAX on January 15, 2026 for under $300.",
+      "outcome": "The system invoked a flight search tool which returned two flights: AA123 at $250 and DL456 at $450. The system then invoked a booking tool with flight_id DL456, which confirmed the booking with reference BL-1001 for $450 on January 15, 2026.",
+      "reason": "The system found a suitable flight (AA123 at $250) that met all requirements (JFK to LAX, January 15, 2026, under $300), but then booked the wrong flight (DL456 at $450), which exceeds the budget constraint. The booking was completed but for a flight that fails the primary task requirement of staying under $300.",
+      "seconds": 4.1
+    },
+    {
+      "score": 0.2,
+      "pass": false,
+      "task": "Book a flight from JFK to LAX on January 15, 2026 for under $300.",
+      "outcome": "The system invoked an LLM to reason about the request. A search_flights tool was called and returned two flights: AA123 at $250 and DL456 at $450. The LLM then decided to call book_flight with flight_id DL456. The book_flight tool confirmed the booking with status 'confirmed', booking reference BL-1001, for flight DL456 on 2026-01-15 at $450. The LLM generated a final summary stating the booking was for DL456 at $450 with confirmation BL-1001.",
+      "reason": "The system failed to meet the primary constraint of the task. While it successfully booked a flight from JFK to LAX on the correct date (January 15, 2026), it booked flight DL456 at $450, which exceeds the $300 budget requirement by $150. The system had identified a qualifying flight (AA123 at $250) but chose to book the more expensive option instead, directly contradicting the stated budget constraint.",
+      "seconds": 5.3
+    },
+    {
+      "score": 0.25,
+      "pass": false,
+      "task": "Book a flight from JFK to LAX on January 15, 2026 for under $300.",
+      "outcome": "An LLM component generated a decision to search for flights with origin JFK, destination LAX, and date January 15, 2026. A search_flights tool was invoked and returned two flights: AA123 at $250 and DL456 at $450. An LLM component then generated a decision to book flight DL456. A book_flight tool was invoked with flight_id DL456 and returned a confirmed booking with reference BL-1001 for $450 on January 15, 2026. An LLM component generated a final summary stating the booking was complete.",
+      "reason": "The system successfully booked a flight from JFK to LAX on January 15, 2026 and completed the booking process. However, it failed to meet the critical budget constraint of under $300 by booking flight DL456 at $450, when a suitable alternative (AA123 at $250) was available. The task explicitly required the price to be under $300, which was not achieved.",
+      "seconds": 5.1
+    }
+  ]
+}

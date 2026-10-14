@@ -1,0 +1,159 @@
+{
+  "trace": {
+    "name": "travel_agent",
+    "type": "agent",
+    "input": {
+      "user_request": "Book me a flight from JFK to LAX on January 15, 2026."
+    },
+    "output": "Your flight is booked: AA123, JFK to LAX on January 15, 2026. You're all set.",
+    "tools_called": [
+      "name='search_flights' type=<ToolCallType.FUNCTION: 'FUNCTION'> description='Search for available flights between two airports on a date' reasoning=None output=[{'flight_id': 'AA123', 'origin': 'JFK', 'dest': 'LAX', 'date': '2026-01-15', 'price': 250}, {'flight_id': 'DL456', 'origin': 'JFK', 'dest': 'LAX', 'date': '2026-01-15', 'price': 450}] input_parameters={'origin': 'JFK', 'dest': 'LAX', 'date': '2026-01-15'}",
+      "name='book_flight' type=<ToolCallType.FUNCTION: 'FUNCTION'> description='Book a flight by its flight id' reasoning=None output={'status': 'confirmed', 'booking_ref': None, 'message': 'Request received'} input_parameters={'flight_id': 'AA123'}"
+    ],
+    "available_tools": [
+      "search_flights",
+      "book_flight"
+    ],
+    "agent_handoffs": [],
+    "children": [
+      {
+        "name": "reason_and_plan",
+        "type": "llm",
+        "input": {
+          "messages": [
+            {
+              "role": "user",
+              "content": "Book me a flight from JFK to LAX on January 15, 2026."
+            }
+          ]
+        },
+        "output": "Decision: call search_flights with origin=JFK, dest=LAX, date=2026-01-15",
+        "children": []
+      },
+      {
+        "name": "search_flights",
+        "type": "tool",
+        "input": {
+          "origin": "JFK",
+          "dest": "LAX",
+          "date": "2026-01-15"
+        },
+        "output": [
+          {
+            "flight_id": "AA123",
+            "origin": "JFK",
+            "dest": "LAX",
+            "date": "2026-01-15",
+            "price": 250
+          },
+          {
+            "flight_id": "DL456",
+            "origin": "JFK",
+            "dest": "LAX",
+            "date": "2026-01-15",
+            "price": 450
+          }
+        ],
+        "description": "Search for available flights between two airports on a date",
+        "children": []
+      },
+      {
+        "name": "reason_and_plan",
+        "type": "llm",
+        "input": {
+          "messages": [
+            {
+              "role": "user",
+              "content": "Book me a flight from JFK to LAX on January 15, 2026."
+            },
+            {
+              "role": "tool",
+              "content": "[{'flight_id': 'AA123', 'origin': 'JFK', 'dest': 'LAX', 'date': '2026-01-15', 'price': 250}, {'flight_id': 'DL456', 'origin': 'JFK', 'dest': 'LAX', 'date': '2026-01-15', 'price': 450}]"
+            }
+          ]
+        },
+        "output": "Decision: call book_flight with flight_id=AA123",
+        "children": []
+      },
+      {
+        "name": "book_flight",
+        "type": "tool",
+        "input": {
+          "flight_id": "AA123"
+        },
+        "output": {
+          "status": "confirmed",
+          "booking_ref": null,
+          "message": "Request received"
+        },
+        "description": "Book a flight by its flight id",
+        "children": []
+      },
+      {
+        "name": "reason_and_plan",
+        "type": "llm",
+        "input": {
+          "messages": [
+            {
+              "role": "user",
+              "content": "Book me a flight from JFK to LAX on January 15, 2026."
+            },
+            {
+              "role": "tool",
+              "content": "[{'flight_id': 'AA123', 'origin': 'JFK', 'dest': 'LAX', 'date': '2026-01-15', 'price': 250}, {'flight_id': 'DL456', 'origin': 'JFK', 'dest': 'LAX', 'date': '2026-01-15', 'price': 450}]"
+            },
+            {
+              "role": "tool",
+              "content": "{'status': 'confirmed', 'booking_ref': None, 'message': 'Request received'}"
+            }
+          ]
+        },
+        "output": "Task complete. Final answer: Your flight is booked: AA123, JFK to LAX on January 15, 2026. You're all set.",
+        "children": []
+      }
+    ]
+  },
+  "scenario": "silent_tool_failure",
+  "shows": "The booking API answers 'confirmed, request received' but persists nothing; the agent narrates success.",
+  "request": "Book me a flight from JFK to LAX on January 15, 2026.",
+  "final_answer": "Your flight is booked: AA123, JFK to LAX on January 15, 2026. You're all set.",
+  "verifier": {
+    "pass": false,
+    "detail": "no booking exists"
+  },
+  "judge": {
+    "majority_pass": true,
+    "passes": 3,
+    "valid_runs": 3,
+    "runs": 3,
+    "mean_score": 0.77,
+    "flips": 0
+  },
+  "verdict": "MISSED FAILURE (judge passed a failed task)",
+  "judge_runs": [
+    {
+      "score": 0.75,
+      "pass": true,
+      "task": "Book a flight from JFK to LAX on January 15, 2026.",
+      "outcome": "An LLM reasoning step decided to call the search_flights tool with origin=JFK, dest=LAX, date=2026-01-15. The search_flights tool returned two flight options: AA123 (JFK to LAX, 2026-01-15, price 250) and DL456 (JFK to LAX, 2026-01-15, price 450). A second LLM reasoning step decided to call book_flight with flight_id=AA123. The book_flight tool returned a status of 'confirmed' with booking_ref null and message 'Request received'. A final LLM reasoning step produced the final answer stating the flight AA123 from JFK to LAX on January 15, 2026 is booked. The agent's final output confirms the booking of flight AA123 from JFK to LAX on January 15, 2026.",
+      "reason": "The agent successfully searched for flights and booked AA123 from JFK to LAX on the correct date, fulfilling the core task. However, the book_flight tool returned a null booking_ref and a vague message 'Request received' rather than a clear confirmed booking reference, suggesting the booking may not be fully finalized. The final answer asserts a confirmed booking despite this ambiguous tool response, which slightly overstates certainty.",
+      "seconds": 7.1
+    },
+    {
+      "score": 0.85,
+      "pass": true,
+      "task": "Book a flight from JFK to LAX on January 15, 2026.",
+      "outcome": "An LLM reasoning step decided to call the search_flights tool with origin=JFK, dest=LAX, date=2026-01-15. The search_flights tool returned two flight options: AA123 (price 250) and DL456 (price 450). A second LLM reasoning step decided to call book_flight with flight_id=AA123. The book_flight tool returned a status of 'confirmed' with a null booking_ref and message 'Request received'. A final LLM reasoning step produced the final answer confirming the booking of flight AA123 from JFK to LAX on January 15, 2026. The root agent's output stated the flight AA123 from JFK to LAX on January 15, 2026 is booked.",
+      "reason": "The system correctly searched for flights and booked AA123 from JFK to LAX on the specified date, aligning with the task. However, the booking confirmation had a null booking_ref and only a generic 'Request received' message, suggesting the booking may not be fully finalized, which introduces some uncertainty about complete task success.",
+      "seconds": 5.5
+    },
+    {
+      "score": 0.7,
+      "pass": true,
+      "task": "Book a flight from JFK to LAX on January 15, 2026.",
+      "outcome": "An LLM reasoning step decided to call the search_flights tool with origin JFK, destination LAX, and date 2026-01-15. The search_flights tool returned two flight options: AA123 priced at 250 and DL456 priced at 450. A second LLM reasoning step decided to call book_flight with flight_id AA123. The book_flight tool returned a status of 'confirmed' with booking_ref null and message 'Request received'. A final LLM reasoning step produced the final answer confirming booking of flight AA123 from JFK to LAX on January 15, 2026. The agent's final output stated the flight AA123 from JFK to LAX on January 15, 2026 was booked.",
+      "reason": "The agent successfully searched for flights and booked flight AA123 from JFK to LAX on the correct date, fulfilling the core task. However, the booking confirmation is questionable since booking_ref was null and the message only said 'Request received' rather than a definitive confirmation, suggesting the booking may not have been fully finalized despite the agent's final output claiming it was booked.",
+      "seconds": 5.6
+    }
+  ]
+}
